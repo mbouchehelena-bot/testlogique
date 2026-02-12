@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QCM Interdisciplinaire</title>
+<style>
+body{
+    font-family: "Georgia", sans-serif;
+    background: #0f172a;
+    color: #e5e7eb;
+    text-align:center;
+    padding:40px;
+    height: 100vh;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+button{
+     background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 6px;
+}
+
+.choice{
+    display:block;
+    width:100%;
+    margin:10px 0;
+    background:#ffffff20;
+    color:white;
+}
+
+.choice:hover{
+    background:#ffffff40;
+}
+
+#navButtons{
+    display:none;
+}
+
+.hidden{
+    display:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PAGE ACCUEIL -->
+    <div id="home">
+        <h1>Bienvenue au test 2.0</h1>
+        <p>Ne voyez pas ce test comme un test,Mais comme un cheminement,une experience qui a pour objetif
+      de vous faire ressentir une emotion particuliere.<br><br>
+      Si vous acceptez d'avancer, cliquez — le reste se révélera.<br>
+      Et n'oubliez pas restez juste logique et vraie avec votre personne.</p>
+        <button onclick="startQuiz()">Commencer</button>
+    </div>
+
+    <!-- PAGE QUIZ -->
+    <div id="quiz" class="hidden">
+        <button onclick="goHome()">Accueil</button>
+        <h2 id="question"></h2>
+        <div id="choices"></div>
+        <div id="navButtons">
+            <button id="prevBtn" onclick="previousQuestion()">Précédent</button>
+        </div>
+    </div>
+
+    <!-- PAGE RESULTAT -->
+    <div id="result" class="hidden">
+        <button onclick="goHome()">Accueil</button>
+        <h2>QCM terminé</h2>
+        <p id="finalMessage"></p>
+            <div id="chosenAnswers"></div>
+
+        <div id="inputSection" class="hidden">
+            <p>Entrez les premières lettres des réponses correctes :</p>
+            <input type="text" id="letterInput" maxlength="20">
+            <p id="feedback" class="hidden" style="color:#f87171;margin-top:8px"></p>
+            <br><br>
+            <button id="poursuivreBtn" class="hidden" onclick="goToVictory()">Poursuivre</button>
+        </div>
+
+        
+    </div>
+
+</div>
+
+<script>
+
+const quizData = [
+{
+question:"Une application est dite injective lorsque :",
+choices:["Plusieurs éléments ont la même image",
+"Elle est constante",
+"Elle est périodique",
+"Injectivité : chaque élément possède une image distincte"],
+correct:3,
+letter:"I"
+},
+{
+question:"Le terme qui désigne l’expression sensible des émotions est :",
+choices:["Narration","Description","Ironie","Lyrisme"],
+correct:3,
+letter:"L"
+},
+{
+question:"La branche qui étudie l’être en tant qu’être :",
+choices:["Éthique","Logique","Esthétique","Ontologie"],
+correct:3,
+letter:"O"
+},
+{
+question:"Grandeur vectorielle caractérisant le mouvement :",
+choices:["Accélération","Force","Impulsion","Vitesse"],
+correct:3,
+letter:"V"
+},
+{
+question:"Processus d’adaptation des espèces :",
+choices:["Mutation isolée","Adaptation instantanée","Sélection ponctuelle","Evolution"],
+correct:3,
+letter:"E"
+},
+{
+question:"Composant permettant d’amplifier un signal :",
+choices:["Résistance","Condensateur","Diode","Transistor (modèle Y)"],
+correct:3,
+letter:"Y"
+},
+{
+question:"Maintien de la direction autour de l’axe vertical :",
+choices:["Portance","Tangage","Roulis","Orientation"],
+correct:3,
+letter:"O"
+},
+{
+question:"Caractère singulier et non remplaçable d’un être :",
+choices:["Universalité","Identité sociale","Similarité","Unicité"],
+correct:3,
+letter:"U"
+}
+];
+
+let currentQuestion = 0;
+let collectedLetters = "";
+let selectedAnswers = [];
+let currentDisplayedChoices = [];
+
+function startQuiz(){
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("quiz").classList.remove("hidden");
+    // reset state
+    collectedLetters = "";
+    selectedAnswers = [];
+    loadQuestion();
+    updateNavButtons();
+}
+
+function loadQuestion(){
+    const data = quizData[currentQuestion];
+    document.getElementById("question").innerText = data.question;
+
+    const choicesDiv = document.getElementById("choices");
+    choicesDiv.innerHTML="";
+    // Shuffle choices so the correct answer is not always last
+    const choicesCopy = data.choices.slice();
+    for(let i = choicesCopy.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [choicesCopy[i], choicesCopy[j]] = [choicesCopy[j], choicesCopy[i]];
+    }
+    currentDisplayedChoices = choicesCopy;
+
+    currentDisplayedChoices.forEach((choice,index)=>{
+        const btn = document.createElement("button");
+        btn.innerText = choice;
+        btn.classList.add("choice");
+        btn.onclick = () => selectAnswer(index);
+        choicesDiv.appendChild(btn);
+    });
+    updateNavButtons();
+}
+
+function selectAnswer(index){
+    const chosen = currentDisplayedChoices[index];
+    const correctText = quizData[currentQuestion].choices[quizData[currentQuestion].correct];
+    if(chosen === correctText){
+        collectedLetters += quizData[currentQuestion].letter;
+    }
+    // store the chosen answer text for later recall
+    selectedAnswers.push(chosen);
+
+    currentQuestion++;
+
+    if(currentQuestion < quizData.length){
+        loadQuestion(); // passage automatique
+    } else {
+        showResult();
+    }
+}
+
+function showResult(){
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+    // hide quiz navigation when showing results
+    const nav = document.getElementById('navButtons');
+    if(nav) nav.style.display = 'none';
+
+    // Masquer le mot formé par les initiales avec des astérisques
+    const masked = collectedLetters.replace(/./g, '*');
+    document.getElementById("finalMessage").innerText =
+        "Les initiales révèlent une phrase que vous voulez bien m'entendre prononcer :PS(ecrivez bien ce mot et vous serez surpris par la suite je vous le garanti) " + masked;
+
+    // Afficher les réponses choisies par l'utilisateur
+    const chosenDiv = document.getElementById('chosenAnswers');
+    if(chosenDiv){
+        if(selectedAnswers.length === 0){
+            chosenDiv.innerHTML = '<p>Aucune réponse sélectionnée.</p>';
+        } else {
+            const items = selectedAnswers.map((a,i)=> `<li>${i+1}. ${a}</li>`).join('');
+            chosenDiv.innerHTML = '<p>Réponses choisies :</p><ul style="text-align:left;display:inline-block">'+items+'</ul>';
+        }
+    }
+
+    // Montrer la zone de saisie pour entrer les premières lettres
+    const inputSection = document.getElementById('inputSection');
+    const letterInput = document.getElementById('letterInput');
+    const poursuivreBtn = document.getElementById('poursuivreBtn');
+    const feedback = document.getElementById('feedback');
+    if(inputSection) inputSection.classList.remove('hidden');
+    if(letterInput){
+        letterInput.value = '';
+        letterInput.focus();
+        if(poursuivreBtn) poursuivreBtn.classList.add('hidden');
+        if(feedback) feedback.classList.add('hidden');
+        letterInput.oninput = () => {
+            const raw = letterInput.value.trim();
+            // If nothing entered, hide feedback and hide poursuivre
+            if(raw.length === 0){
+                if(feedback) feedback.classList.add('hidden');
+                if(poursuivreBtn) poursuivreBtn.classList.add('hidden');
+                return;
+            }
+
+            const firstChar = raw.charAt(0).toUpperCase();
+            const lastChar = raw.charAt(raw.length - 1).toUpperCase();
+
+            // Accept when the phrase starts with 'I' and ends with 'E' (case-insensitive)
+            if(firstChar === 'I' && lastChar === 'U'){
+                if(poursuivreBtn) poursuivreBtn.classList.remove('hidden');
+                if(feedback) feedback.classList.add('hidden');
+            } else {
+                if(feedback){
+                    feedback.textContent = "Mot incorrect — réessayez (doit commencer par 'I' et se terminer par 'U').";
+                    feedback.classList.remove('hidden');
+                }
+                if(poursuivreBtn) poursuivreBtn.classList.add('hidden');
+            }
+        }
+    }
+}
+
+function previousQuestion(){
+    if(currentQuestion > 0){
+        currentQuestion--;
+        document.getElementById("quiz").classList.remove("hidden");
+        document.getElementById("result").classList.add("hidden");
+        loadQuestion();
+    } else {
+        goHome();
+    }
+}
+
+function updateNavButtons(){
+    const prevBtn = document.getElementById('prevBtn');
+    const nav = document.getElementById('navButtons');
+    if(nav) nav.style.display = 'block';
+    if(prevBtn) prevBtn.style.display = 'inline-block';
+}
+
+function goHome(){
+    currentQuestion = 0;
+    collectedLetters = "";
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
+    // Cacher la zone de saisie si elle est visible
+    const inputSection = document.getElementById('inputSection');
+    if(inputSection) inputSection.classList.add('hidden');
+    document.getElementById("home").classList.remove("hidden");
+}
+
+function goToVictory(){
+    window.location.href = 'victoire.html';
+}
+
+</script>
+
+</body>
+</html>

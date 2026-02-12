@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Victoire</title>
+<style>
+body{background:#0f172a;color:#e5e7eb;font-family:Georgia,serif;text-align:center;padding:40px}
+.container{max-width:700px;margin:auto}
+h1{color:#10b981}
+button{background:#6366f1;color:white;border:none;padding:10px 18px;font-size:15px;cursor:pointer;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>victoire</h1>
+  <p>felicitations ,vous venez d'arriver à une conclusion qui bien qu'ayant suivi un raisonnement claire et logique,n'est pas forcement celle voulu <br>
+    Cette experience vous a donc demontrer qu'un raisonement claire et logique peut ne pas toujours conduire à la conclusion attendue.<br>
+    Mais sinon merci pour votre declaration!!!!hahahahahahahahahahaha ça fait un bien fou!!!!!<br><br>
+    Maintenant si vous voulez savoir le fin mot de cette experience, cliquez sur le bouton oui sinon cliquez sur le bouton non </p>
+
+    <div id="victoryActions" style="position:relative; height:140px; margin-top:20px;">
+      <button id="ouiBtn" style="position:relative; margin-right:20px;" onclick="window.location.href='conclusion.html'">Oui</button>
+      <button id="nonBtn" style="position:absolute; left:120px; top:0px;">Non</button>
+    </div>
+
+    <script>
+      (function(){
+        const cont = document.getElementById('victoryActions');
+        const nonBtn = document.getElementById('nonBtn');
+        if(!cont || !nonBtn) return;
+
+        // Ensure container is positioned
+        cont.style.position = 'relative';
+
+        // Keep button within container bounds when moving
+        function moveNonButtonRandom(){
+          const contRect = cont.getBoundingClientRect();
+          const btnRect = nonBtn.getBoundingClientRect();
+          const maxLeft = Math.max(0, contRect.width - btnRect.width);
+          const maxTop = Math.max(0, contRect.height - btnRect.height);
+          const newLeft = Math.floor(Math.random() * maxLeft);
+          const newTop = Math.floor(Math.random() * maxTop);
+          nonBtn.style.left = newLeft + 'px';
+          nonBtn.style.top = newTop + 'px';
+        }
+
+        // When the cursor moves inside the container, if it comes within threshold, move the button
+        cont.addEventListener('mousemove', (e) => {
+          const contRect = cont.getBoundingClientRect();
+          const mouseX = e.clientX - contRect.left;
+          const mouseY = e.clientY - contRect.top;
+          const btnRect = nonBtn.getBoundingClientRect();
+          const btnX = btnRect.left - contRect.left + btnRect.width/2;
+          const btnY = btnRect.top - contRect.top + btnRect.height/2;
+          const dx = mouseX - btnX;
+          const dy = mouseY - btnY;
+          const dist = Math.hypot(dx, dy);
+          const THRESHOLD = 120; // px
+          if(dist < THRESHOLD){
+            moveNonButtonRandom();
+          }
+        });
+
+        // Also move on hover to be extra tricky
+        nonBtn.addEventListener('mouseenter', (e) => {
+          moveNonButtonRandom();
+        });
+
+        // Clicking 'Non' returns to main page
+        nonBtn.addEventListener('click', () => {
+          window.location.href = 'qcmlove.html';
+        });
+
+        // Place initially a bit right
+        nonBtn.style.left = '120px';
+        nonBtn.style.top = '0px';
+      })();
+    </script>
+</div>
+</body>
+</html>
